@@ -16,12 +16,12 @@ public class NWDownloader {
 	public static void main(String[] args) throws Exception {
 		Scanner sc;
 		while(true){
-			int menuSelect;
+			int menuSelect, innerSelector;
 			sc = new Scanner(System.in);
-			System.out.println("메뉴를 선택하세요\n1. 한 편씩 다운로드\n2. 여러 편씩 다운로드\n9. 종료"); menuSelect = sc.nextInt();
+			System.out.println("메뉴를 선택하세요\n1. 한 편씩 다운로드\n2. 여러 편씩 다운로드(beta)\n9. 종료"); menuSelect = sc.nextInt();
 			switch(menuSelect){
 				case 1:{
-					int innerSelector = 1;
+					innerSelector = 1;
 					while(true){
 						sc = new Scanner(System.in);
 						System.out.print("주소를 입력하세요 : "); connector(sc.nextLine());
@@ -32,7 +32,7 @@ public class NWDownloader {
 					break;
 				}
 				case 2:{
-					int innerSelector = 1;
+					innerSelector = 1;
 					while(true){
 						sc = new Scanner(System.in);
 						int s, e;
@@ -44,6 +44,13 @@ public class NWDownloader {
 						
 						s = Integer.parseInt(start.substring(start.indexOf("no=")+3, start.indexOf("&week")));
 						e = Integer.parseInt(end.substring(end.indexOf("no=")+3, end.indexOf("&week")));
+						
+						//시작주소 넘버가 마지막주소보다 클 경우 서로 바꿔준다.
+						if(s > e){
+							int tmp = s;
+							s = e;
+							e = tmp;
+						}
 						
 						System.out.printf("총 회차수 %d개\n", (e-s+1));
 						for(int i=s;i<=e;i++) connector(address+i);
@@ -60,8 +67,9 @@ public class NWDownloader {
 		}
 	}
 	private static void connector(String address) throws Exception {
-
-		Document doc = Jsoup.connect(address).userAgent("Mozilla/5.0").get();
+		
+		//타임아웃 10초
+		Document doc = Jsoup.connect(address).userAgent("Mozilla/5.0").timeout(10000).get();
 		
 		//parentTitle은 최상위 폴더로 지정할 웹툰 제목 & 특수문자 제거
 		String parentTitle = doc.select("h2.ly_tit").text().replaceAll("[^[:alnum:]+]", " ").replaceAll("[.]|[?]", "");
@@ -86,7 +94,7 @@ public class NWDownloader {
 		for(Element e : elements){
 			imgUrl = e.attr("src");
 			download(address, path, imgUrl, pageNum);
-			System.out.printf("%d / %d ...... 완료!\n", ++pageNum, total);
+			System.out.printf("%2d / %2d ...... 완료!\n", ++pageNum, total);
 		}
 		address = ""; pageNum = 0;
 	}
