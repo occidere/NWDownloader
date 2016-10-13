@@ -13,12 +13,13 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class NWDownloader {
+	private static final String defaultPath = "C:\\Webtoon\\";
 	public static void main(String[] args) throws Exception {
 		Scanner sc;
 		while(true){
 			int menuSelect, innerSelector;
 			sc = new Scanner(System.in);
-			System.out.println("메뉴를 선택하세요\n1. 한 편씩 다운로드\n2. 여러 편씩 다운로드(beta)\n9. 종료"); menuSelect = sc.nextInt();
+			System.out.println("메뉴를 선택하세요\n1. 한 편씩 다운로드\n2. 여러 편씩 다운로드(beta)\n3. 다운로드 폴더 열기\n9. 종료"); menuSelect = sc.nextInt();
 			switch(menuSelect){
 				case 1:{
 					innerSelector = 1;
@@ -61,6 +62,11 @@ public class NWDownloader {
 					}
 					break;
 				}
+				case 3:{
+					// C:/Webtoon/ 폴더 열기
+					Runtime.getRuntime().exec("explorer.exe "+defaultPath);
+					break;
+				}
 				case 9: System.out.println("프로그램을 종료합니다.");
 				default: sc.close(); return;
 			}
@@ -76,7 +82,7 @@ public class NWDownloader {
 		//title은 회차수 까지 포함한 최상위 폴더의 내부에 생성될 개별 폴더 & 특수문자 제거
 		String title = doc.select("meta[property=og:title]").attr("content").replaceAll("[^[:alnum:]+]|[.]|[?]", " ").trim();
 		//path는 최종 다운로드 주소
-		String path = "C:/Webtoon/"+parentTitle+"/"+title+"/";
+		String path = defaultPath+parentTitle+"/"+title+"/";
 		int pageNum = 0;
 		
 		System.out.printf("제목 : %s\n다운로드 폴더 : %s\n",title,path);
