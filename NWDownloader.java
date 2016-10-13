@@ -26,12 +26,11 @@ public class NWDownloader {
 					innerSelector = 1;
 					while(true){
 						sc = new Scanner(System.in);
-						System.out.print("주소를 입력하세요 : ");{
-							connector(sc.nextLine());
-							//실패시 메뉴로 돌아가기
-							if(!status){
-								System.out.println("다운로드 실패! 메뉴로 돌아갑니다.\n"); break;
-							}
+						System.out.print("주소를 입력하세요 : "); connector(sc.nextLine());
+						// 실패시 메뉴로 돌아가기
+						if (!status) {
+							System.out.println("다운로드 실패! 메뉴로 돌아갑니다.\n");
+							break;
 						}
 						System.out.print("종료는 0, 다른 만화 다운로드는 1을 입력하세요 : "); innerSelector = sc.nextInt();
 						if(innerSelector == 0) break;
