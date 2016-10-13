@@ -13,65 +13,93 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class NWDownloader {
-
-	private static String address;
-	private static File f;
-	private static int pageNum;
-	private static String extension;
-	private static String preNum;
-	private static int pivot = 1;
-	
 	public static void main(String[] args) throws Exception {
-		//0입력시 종료, 1이면 계속 실행
-		while(pivot == 1){
-			Scanner sc = new Scanner(System.in);
-			System.out.print("주소를 입력하세요 : "); address = sc.nextLine();
-			Document doc = Jsoup.connect(address).userAgent("Mozilla/5.0").get();
-			
-			//parentTitle은 최상위 폴더로 지정할 웹툰 제목 & 특수문자 제거
-			String parentTitle = doc.select("h2.ly_tit").text().replaceAll("[^[:alnum:]+]", " ").replaceAll("[.]", "");
-			//title은 회차수 까지 포함한 최상위 폴더의 내부에 생성될 개별 폴더 & 특수문자 제거
-			String title = doc.select("meta[property=og:title]").attr("content").replaceAll("[^[:alnum:]+]", " ").replaceAll("[.]", "");
-			//path는 최종 다운로드 주소
-			String path = "C:/Webtoon/"+parentTitle+"/"+title+"/";
-			
-			System.out.printf("제목 : %s\n다운로드 폴더 : %s\n",title,path);
-			
-			//파일 다운받을 경로 생성 ex)C:/webtoon/복학왕/복학왕 - 115화/
-			f = new File(path);
-			f.mkdirs();
-			
-			//<img src= 부분 파싱
-			Elements elements = doc.select("img[src~=imgcomic]");
-			//전체 파일 개수
-			int total = elements.size();
-			System.out.printf("다운로드 시작 (전체 %d개)\n", total);
-			String imgUrl = "";
-			for(Element e : elements){
-				imgUrl = e.attr("src");
-				download(path, imgUrl, pageNum);
-				System.out.printf("%d / %d ...... 완료!\n", ++pageNum, total);
+		Scanner sc;
+		while(true){
+			int menuSelect;
+			sc = new Scanner(System.in);
+			System.out.println("메뉴를 선택하세요\n1. 한 편씩 다운로드\n2. 여러 편씩 다운로드\n9. 종료"); menuSelect = sc.nextInt();
+			switch(menuSelect){
+				case 1:{
+					int innerSelector = 1;
+					while(true){
+						sc = new Scanner(System.in);
+						System.out.print("주소를 입력하세요 : "); connector(sc.nextLine());
+						System.out.print("종료는 0, 다른 만화 다운로드는 1을 입력하세요 : "); innerSelector = sc.nextInt();
+						if(innerSelector == 0) break;
+						System.out.println();
+					}
+					break;
+				}
+				case 2:{
+					int innerSelector = 1;
+					while(true){
+						sc = new Scanner(System.in);
+						int s, e;
+						String start, end, address;
+						System.out.print("시작할 주소를 입력하세요 : "); start = sc.nextLine();
+						System.out.print("마지막 주소를 입력하세요 : "); end = sc.nextLine();
+						
+						address = start.substring(0, start.indexOf("no="))+"no=";
+						
+						s = Integer.parseInt(start.substring(start.indexOf("no=")+3, start.indexOf("&week")));
+						e = Integer.parseInt(end.substring(end.indexOf("no=")+3, end.indexOf("&week")));
+						
+						System.out.printf("총 회차수 %d개\n", (e-s+1));
+						for(int i=s;i<=e;i++) connector(address+i);
+						
+						System.out.print("종료는 0, 다른 만화 다운로드는 1을 입력하세요 : "); innerSelector = sc.nextInt();
+						if(innerSelector == 0) break;
+						System.out.println();
+					}
+					break;
+				}
+				case 9: System.out.println("프로그램을 종료합니다.");
+				default: sc.close(); return;
 			}
-			
-			address = ""; pageNum = 0;
-			System.out.print("done!\n종료는 0, 다른 만화 받기는 1을 입력하세요 : ");
-			pivot = sc.nextByte();
-			
-			if(pivot == 0) sc.close();
-			else if(pivot == 1) continue;
-			else System.out.println("잘못된 입력입니다.");
-			System.out.println("프로그램을 종료합니다.");
 		}
 	}
+	private static void connector(String address) throws Exception {
+
+		Document doc = Jsoup.connect(address).userAgent("Mozilla/5.0").get();
+		
+		//parentTitle은 최상위 폴더로 지정할 웹툰 제목 & 특수문자 제거
+		String parentTitle = doc.select("h2.ly_tit").text().replaceAll("[^[:alnum:]+]", " ").replaceAll("[.]|[?]", "");
+		//title은 회차수 까지 포함한 최상위 폴더의 내부에 생성될 개별 폴더 & 특수문자 제거
+		String title = doc.select("meta[property=og:title]").attr("content").replaceAll("[^[:alnum:]+]", " ").replaceAll("[.]|[?]", "");
+		//path는 최종 다운로드 주소
+		String path = "C:/Webtoon/"+parentTitle+"/"+title+"/";
+		int pageNum = 0;
+		
+		System.out.printf("제목 : %s\n다운로드 폴더 : %s\n",title,path);
+		
+		//파일 다운받을 경로 생성 ex)C:/webtoon/복학왕/복학왕 - 115화/
+		File f = new File(path);
+		f.mkdirs();
+		
+		//<img src= 부분 파싱
+		Elements elements = doc.select("img[src~=imgcomic]");
+		//전체 파일 개수
+		int total = elements.size();
+		System.out.printf("다운로드 시작 (전체 %d개)\n", total);
+		String imgUrl = "";
+		for(Element e : elements){
+			imgUrl = e.attr("src");
+			download(address, path, imgUrl, pageNum);
+			System.out.printf("%d / %d ...... 완료!\n", ++pageNum, total);
+		}
+		address = ""; pageNum = 0;
+	}
 	
-	private static void download(String path, String imgUrl, int pageNum) throws Exception {
+	private static void download(String address, String path, String imgUrl, int pageNum) throws Exception {
+		String extension = "", preNum = "";
 		
 		//확장자 판단
-		if (imgUrl.toString().contains("jpg")) extension = "jpg";
-		else if (imgUrl.toString().contains("jpeg")) extension = "jpeg";
-		else if (imgUrl.toString().contains("png")) extension = "png";
-		else if (imgUrl.toString().contains("gif")) extension = "gif";
-		else if (imgUrl.toString().contains("bmp")) extension = "bmp";
+		if (imgUrl.contains("jpg")) extension = "jpg";
+		else if (imgUrl.contains("jpeg")) extension = "jpeg";
+		else if (imgUrl.contains("png")) extension = "png";
+		else if (imgUrl.contains("gif")) extension = "gif";
+		else if (imgUrl.contains("bmp")) extension = "bmp";
 		
 		// 페이지 번호 설정. 001.jpg, 015.jpg, 257.jpg 이런식으로 3자리수까지 오름차순 저장 가능
 		if(pageNum+1<10) preNum = "00";
