@@ -72,9 +72,9 @@ public class NWDownloader {
 		Document doc = Jsoup.connect(address).userAgent("Mozilla/5.0").timeout(10000).get();
 		
 		//parentTitle은 최상위 폴더로 지정할 웹툰 제목 & 특수문자 제거
-		String parentTitle = doc.select("h2.ly_tit").text().replaceAll("[^[:alnum:]+]", " ").replaceAll("[.]|[?]", "");
+		String parentTitle = doc.select("h2.ly_tit").text().replaceAll("[^[:alnum:]+]|[.]|[?]", " ").trim();
 		//title은 회차수 까지 포함한 최상위 폴더의 내부에 생성될 개별 폴더 & 특수문자 제거
-		String title = doc.select("meta[property=og:title]").attr("content").replaceAll("[^[:alnum:]+]", " ").replaceAll("[.]|[?]", "");
+		String title = doc.select("meta[property=og:title]").attr("content").replaceAll("[^[:alnum:]+]|[.]|[?]", " ").trim();
 		//path는 최종 다운로드 주소
 		String path = "C:/Webtoon/"+parentTitle+"/"+title+"/";
 		int pageNum = 0;
@@ -121,8 +121,8 @@ public class NWDownloader {
 		conn.setRequestProperty("User-Agent", "Mozilla/5.0");
 		InputStream in = conn.getInputStream();
 		
-		//다운로드 부분
-		byte[] buf = new byte[2048];
+		//다운로드 부분. 버퍼 크기 16*1024B(16Kb)로 조정
+		byte[] buf = new byte[16*1024];
 		int len = 0;
 		while((len = in.read(buf))>0) fos.write(buf, 0, len);
 		fos.close();
