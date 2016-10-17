@@ -14,16 +14,18 @@ import org.jsoup.select.Elements;
 
 public class NWDownloader {
 	private static final String defaultPath = "C:\\Webtoon\\";
-	private static boolean status = true; //실패 여부 변수
+	private static boolean status; //실패 여부 변수. true = 정상, false = 실패
+	
 	public static void main(String[] args) throws Exception {
 		Scanner sc;
 		while(true){
-			int menuSelect, innerSelector;
+			status = true;
+			int selector;
 			sc = new Scanner(System.in);
-			System.out.println("메뉴를 선택하세요\n  1. 한 편씩 다운로드\n  2. 여러 편씩 다운로드\n  3. 다운로드 폴더 열기\n  0. 종료"); menuSelect = sc.nextInt();
-			switch(menuSelect){
+			System.out.println("메뉴를 선택하세요\n  1. 한 편씩 다운로드\n  2. 여러 편씩 다운로드\n  3. 다운로드 폴더 열기\n  0. 종료"); selector = sc.nextInt();
+			switch(selector){
 				case 1:{
-					innerSelector = 1;
+					selector = 1;
 					while(true){
 						sc = new Scanner(System.in);
 						System.out.print("주소를 입력하세요 : "); connector(sc.nextLine());
@@ -32,13 +34,12 @@ public class NWDownloader {
 							System.out.println("다운로드 실패! 메뉴로 돌아갑니다.\n");
 							break;
 						}
-						System.out.print("종료는 0, 다른 만화 다운로드는 1을 입력하세요 : "); innerSelector = sc.nextInt();
-						if(innerSelector == 0) break;
+						System.out.print("종료는 0, 다른 만화 다운로드는 1을 입력하세요 : "); if((selector = sc.nextInt()) == 0) break;
 					}
 					break;
 				}
 				case 2:{
-					innerSelector = 1;
+					selector = 1;
 					while(true){
 						sc = new Scanner(System.in);
 						int s, e;
@@ -50,6 +51,9 @@ public class NWDownloader {
 						
 						s = Integer.parseInt(start.substring(start.indexOf("no=")+3, start.indexOf("&week")));
 						e = Integer.parseInt(end.substring(end.indexOf("no=")+3, end.indexOf("&week")));
+						
+						//시작주소와 끝 주소가 서로 다른 만화일 경우
+						if(!areSameComic(start, end)) break;
 						
 						//시작주소 넘버가 마지막주소보다 클 경우 서로 바꿔준다.
 						if(s > e){
@@ -66,8 +70,7 @@ public class NWDownloader {
 							if(!status) System.out.println("다운로드 실패! 다음화 다운로드를 시도합니다...");
 						}
 						
-						System.out.print("종료는 0, 다른 만화 다운로드는 1을 입력하세요 : "); innerSelector = sc.nextInt();
-						if(innerSelector == 0) break;
+						System.out.print("종료는 0, 다른 만화 다운로드는 1을 입력하세요 : "); if((selector = sc.nextInt()) == 0) break;
 					}
 					break;
 				}
@@ -81,7 +84,25 @@ public class NWDownloader {
 			}
 		}
 	}
+
+	//시작주소와 끝 주소가 서로 다른 만화일 경우 검증용
+	private static boolean areSameComic(String start, String end){
+		if(!start.substring(0, start.indexOf("&no=")).equals(end.substring(0, end.indexOf("&no=")))){
+			System.out.println("같은 만화의 주소를 입력해 주세요.");
+			return false;
+		}
+		else return true;
+	}
+	
 	private static void connector(String address) {
+		//제대로 된 주소인지 검증
+		if(!address.contains("http://comic.naver.com/webtoon/detail.nhn?titleId")){
+			System.out.println("잘못된 주소입니다.");
+			status = false;
+			return;
+		}
+		else status = true;
+		
 		try{
 			//타임아웃 30초
 			Document doc = Jsoup.connect(address).userAgent("Mozilla/5.0").timeout(30000).get();
@@ -109,9 +130,6 @@ public class NWDownloader {
 			for(Element e : elements){
 				imgUrl = e.attr("src");
 				download(address, path, imgUrl, pageNum);
-				
-				if(!status) return;
-				
 				System.out.printf("%2d / %2d ...... 완료!\n", ++pageNum, total);
 			}
 			status = true;
@@ -123,6 +141,7 @@ public class NWDownloader {
 	}
 	
 	private static void download(String address, String path, String imgUrl, int pageNum) {
+		if(!status) return;
 		String extension = "", preNum = "";
 		
 		//확장자 판단
