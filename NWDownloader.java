@@ -75,7 +75,9 @@ public class NWDownloader {
 					break;
 				}
 				case 3:{
-					// C:/Webtoon/ 폴더 열기
+					// C:/Webtoon/ 폴더 열기. 폴더가 없는 경우 먼저 생성
+					File f = new File(defaultPath);
+					if(!f.exists()) f.mkdirs();
 					Runtime.getRuntime().exec("explorer.exe "+defaultPath);
 					break;
 				}
@@ -118,8 +120,7 @@ public class NWDownloader {
 			System.out.printf("제목 : %s\n다운로드 폴더 : %s\n",title,path);
 			
 			//파일 다운받을 경로 생성 ex)C:/webtoon/복학왕/복학왕 - 115화/
-			File f = new File(path);
-			f.mkdirs();
+			new File(path).mkdirs();
 			
 			//<img src= 부분 파싱
 			Elements elements = doc.select("img[src~=imgcomic]");
