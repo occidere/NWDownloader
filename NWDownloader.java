@@ -168,7 +168,7 @@ public class NWDownloader {
 			conn.setRequestProperty("User-Agent", "Mozilla/5.0");
 			InputStream in = conn.getInputStream();
 
-			//다운로드 부분. 버퍼 크기 32*1024B(32Kb)로 조정
+			//다운로드 부분. 버퍼 크기 1024*1024B(1024Kb)로 조정
 			byte[] buf = new byte[1024*1024];
 			int len = 0;
 			while((len = in.read(buf))>0) fos.write(buf, 0, len);
