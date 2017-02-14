@@ -3,8 +3,10 @@ package parser;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+
 import java.net.HttpURLConnection;
 import java.net.URL;
+
 import java.util.Scanner;
 
 import org.jsoup.Jsoup;
@@ -15,19 +17,21 @@ import org.jsoup.select.Elements;
 public class NWDownloader {
 	private static final String DEFAULT_PATH = "C:\\Webtoon\\";
 	public static void main(String[] args) throws Exception {
-		Scanner sc;
-		while(true){
-			sc = new Scanner(System.in);
+		Scanner sc = new Scanner(System.in);
+		int menuSelector = Integer.MAX_VALUE;
+		System.out.println("제작자: occidere\t버전: 0.2.6");
+		while(menuSelector!=0){
 			System.out.println("메뉴를 선택하세요\n  1. 한 편씩 다운로드\n  2. 여러 편씩 다운로드\n  3. 다운로드 폴더 열기\n  0. 종료");
-			switch(Integer.parseInt(sc.nextLine())){
+			menuSelector = sc.nextInt();
+			switch(menuSelector){
 				case 1:{
-					System.out.print("주소를 입력하세요 : "); connector(sc.nextLine());
+					System.out.print("주소를 입력하세요 : "); connector(sc.next().trim());
 					break;
 				}
 				case 2:{
 					String start, end, address;
-					System.out.print("시작할 주소를 입력하세요 : "); start = sc.nextLine();
-					System.out.print("마지막 주소를 입력하세요 : "); end = sc.nextLine();
+					System.out.print("시작할 주소를 입력하세요 : "); start = sc.next().trim();
+					System.out.print("마지막 주소를 입력하세요 : "); end = sc.next().trim();
 
 					address = start.substring(0, start.indexOf("no=")+3);
 
@@ -57,9 +61,9 @@ public class NWDownloader {
 				}
 				//종료시 break문이 없어 자동으로 default까지 가서 스캐너 닫고 return으로 전체종료
 				case 0: System.out.println("프로그램을 종료합니다.");
-				default: sc.close(); return;
 			}
 		}
+		sc.close();
 	}
 	
 	//errorCode에 따라 메세지 출력
@@ -137,7 +141,7 @@ public class NWDownloader {
 			System.out.printf("다운로드 시작 (전체 %d개)\n", total);
 			for(Element e : elements){
 				download(address, path, e.attr("src"), pageNum);
-				System.out.printf("%2d / %2d ...... 완료!\n", ++pageNum, total);
+				System.out.printf("%3d / %3d ...... 완료!\n", ++pageNum, total);
 			}
 		}
 		catch(Exception e){ printErrMsg(0); }
@@ -152,21 +156,13 @@ public class NWDownloader {
 		return "."+ext;
 	}
 	
-	//페이지 번호 완성 메서드. 001.jpg, 015.jpg, 257.jpg 이런식으로 3자리수까지 오름차순 저장 가능
-	private static String setPageNum(int pageNum){
-		StringBuilder preNum = new StringBuilder();
-		if(pageNum+1<10) preNum.append("00");
-		else if(pageNum+1<100) preNum.append("0");
-		return preNum.append(pageNum+1).toString();
-	}
-	
 	//다운로드 메서드
 	private static void download(String address, String path, String imgUrl, int pageNum) {
 		FileOutputStream fos;
 		try {
-			fos = new FileOutputStream(path + setPageNum(pageNum) + setExt(imgUrl));
+			fos = new FileOutputStream(path + String.format("%03d", ++pageNum) + setExt(imgUrl));
 			HttpURLConnection conn = (HttpURLConnection)new URL(imgUrl).openConnection();
-			conn.setConnectTimeout(30000); //최대 30초까지 시간 지연 기다려줌
+			conn.setConnectTimeout(60000); //최대 60초까지 시간 지연 기다려줌
 			conn.setRequestMethod("GET");
 			conn.setRequestProperty("Referer", address); //핵심! 이거 빠지면 연결 안됨
 			conn.setRequestProperty("User-Agent", "Mozilla/5.0");
