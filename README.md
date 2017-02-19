@@ -1,6 +1,8 @@
 # NWDownloader
 네이버 웹툰 다운로더
 * 해당 프로그램은 HtmlUnit과 Jsoup 라이브러리를 이용하였습니다.
+* Jsoup: https://jsoup.org/
+* HtmlUnit: http://htmlunit.sourceforge.net/
 * 해당 프로그램 및 소스코드는 개인적인 자바 공부를 위하여 작성되었습니다.
 * 저작권법을 준수하여야 합니다.
 * 다운로드 받은 웹툰은 개인 소장용도로만 이용하여야 하고, 재배포, 판매 등의 행위를 하면 안됩니다.
